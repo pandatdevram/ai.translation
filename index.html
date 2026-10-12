@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal AI Document Translator - DEVRAM RABARI</title>
+    <title>AI Unlimited Document Translator - DEVRAM RABARI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Libraries for PDF export & Word (.docx) reading -->
+    
+    <!-- Libraries for PDF export, Word (.docx) & PDF reading -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    
     <style>
         :root {
             --bg-main: #0f172a;
@@ -61,7 +64,6 @@
             font-size: 14px;
         }
 
-        /* File Upload Box */
         .upload-area {
             background: var(--card-bg);
             border: 2px dashed var(--accent);
@@ -126,7 +128,7 @@
 
         textarea {
             width: 100%;
-            height: 230px;
+            height: 250px;
             background: var(--bg-main);
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -188,16 +190,16 @@
             color: var(--gold);
             margin-bottom: 15px;
             min-height: 20px;
-            font-weight: 500;
+            font-weight: 600;
         }
 
-        /* Printable Template for PDF */
+        /* Printable HD Clean Template for PDF */
         #pdfContent {
             display: none;
-            padding: 30px;
+            padding: 40px;
             background: white;
-            color: black;
-            font-family: Arial, sans-serif;
+            color: #0f172a;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
     </style>
 </head>
@@ -206,14 +208,14 @@
 <div class="container">
     <header>
         <h1>DEVRAM RABARI</h1>
-        <p>AI Document Translator & Premium PDF Generator</p>
+        <p>AI Unlimited Document Translator & Clean PDF Generator</p>
     </header>
 
-    <!-- File Upload Section -->
+    <!-- File Upload Area -->
     <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-        <p style="font-size: 16px; font-weight: 600; color: #60a5fa; margin-bottom: 4px;">📂 ફાઇલ અપલોડ કરો (Upload File)</p>
-        <p>Word Document (.docx) અથવા Text ફાઇલ (.txt) અપલોડ કરો</p>
-        <input type="file" id="fileInput" style="display:none" accept=".docx,.txt" onchange="handleFileUpload(event)">
+        <p style="font-size: 16px; font-weight: 600; color: #60a5fa; margin-bottom: 4px;">📂 મોટી ફાઇલ અપલોડ કરો (PDF, Word, TXT)</p>
+        <p>કોઈપણ સાઈઝની .pdf, .docx, અથવા .txt ફાઇલ અપલોડ કરો</p>
+        <input type="file" id="fileInput" style="display:none" accept=".pdf,.docx,.txt" onchange="handleFileUpload(event)">
     </div>
 
     <div class="translator-box">
@@ -223,17 +225,16 @@
                 <label style="font-weight:600;">મૂળ ભાષા (From):</label>
                 <select id="fromLang">
                     <option value="autodetect">ઓટો ડિટેક્ટ (Auto Detect)</option>
-                    <option value="gu">ગુજરાતી (Gujarati)</option>
                     <option value="en" selected>અંગ્રેજી (English)</option>
+                    <option value="gu">ગુજરાતી (Gujarati)</option>
                     <option value="hi">હિન્દી (Hindi)</option>
                     <option value="mr">મરાઠી (Marathi)</option>
                     <option value="pa">પંજાબી (Punjabi)</option>
                     <option value="es">સ્પેનિશ (Spanish)</option>
                     <option value="fr">ફ્રેન્ચ (French)</option>
-                    <option value="ar">અરબી (Arabic)</option>
                 </select>
             </div>
-            <textarea id="inputText" placeholder="અહીં લખાણ ટાઇપ કરો, પેસ્ટ કરો અથવા ઉપરથી ફાઇલ અપલોડ કરો..."></textarea>
+            <textarea id="inputText" placeholder="અહીં લખાણ લખો અથવા મોટી ફાઇલ અપલોડ કરો..."></textarea>
             <div class="btn-group">
                 <button class="btn-secondary" onclick="clearText()">🗑️ સાફ કરો</button>
             </div>
@@ -251,75 +252,116 @@
                     <option value="pa">પંજાબી (Punjabi)</option>
                     <option value="es">સ્પેનિશ (Spanish)</option>
                     <option value="fr">ફ્રેન્ચ (French)</option>
-                    <option value="ar">અરબી (Arabic)</option>
                 </select>
             </div>
-            <textarea id="outputText" readonly placeholder="ભાષાંતર થયેલું લખાણ અહીં દેખાશે..."></textarea>
+            <textarea id="outputText" readonly placeholder="માત્ર ભાષાંતર થયેલું પૂરેપૂરું લખાણ અહીં દેખાશે..."></textarea>
             <div class="btn-group">
                 <button class="btn-secondary" onclick="speakText()">🔊 સાંભળો</button>
                 <button class="btn-secondary" onclick="copyText()">📋 કૉપી</button>
-                <button class="btn-success" onclick="downloadPDF()">📄 HD PDF</button>
+                <button class="btn-success" onclick="downloadPDF()">📄 માત્ર ભાષાંતરની PDF</button>
             </div>
         </div>
     </div>
 
-    <button class="btn-primary" onclick="translateText()">🌐 AI દ્વારા ભાષાંતર કરો (Translate)</button>
+    <button class="btn-primary" onclick="translateText()">🌐 AI દ્વારા સંપૂર્ણ ભાષાંતર કરો (Translate)</button>
     <div class="status" id="statusMsg"></div>
 
-    <!-- Hidden Template for PDF Printing -->
+    <!-- Hidden Printable Clean Template for PDF -->
     <div id="pdfContainer">
         <div id="pdfContent">
-            <div style="text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 15px;">
-                <h2 style="margin:0; color: #1e3a8a; font-size: 24px;">DEVRAM RABARI</h2>
-                <p style="margin:4px 0 0 0; color: #64748b; font-size: 13px;">Official AI Translated Document Report</p>
+            <div style="text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 20px;">
+                <h2 style="margin:0; color: #1e3a8a; font-size: 24px; letter-spacing: 1px;">DEVRAM RABARI</h2>
+                <p style="margin:4px 0 0 0; color: #64748b; font-size: 13px;">Translated Document Report</p>
             </div>
-            <div style="margin-bottom: 15px; font-size: 12px; color: #475569; text-align: right;" id="pdfDate"></div>
+            <div style="margin-bottom: 20px; font-size: 12px; color: #64748b; text-align: right;" id="pdfDate"></div>
             
-            <h4 style="color: #1e3a8a; margin-bottom: 6px;">Original Document:</h4>
-            <div id="pdfOriginal" style="background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; white-space: pre-wrap; font-size: 13px; margin-bottom: 16px;"></div>
-            
-            <h4 style="color: #1e3a8a; margin-bottom: 6px;">AI Translated Output:</h4>
-            <div id="pdfTranslated" style="background: #eff6ff; padding: 12px; border: 1px solid #bfdbfe; border-radius: 6px; white-space: pre-wrap; font-size: 13.5px; font-weight: bold; color: #0f172a;"></div>
+            <div id="pdfTranslatedOnly" style="line-height: 1.8; font-size: 14px; color: #0f172a; white-space: pre-wrap; text-align: justify;"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // Handle DOCX / TXT File Uploads
-    function handleFileUpload(e) {
+    // PDF.js setup
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+    // File Upload Handler
+    async function handleFileUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
 
         const status = document.getElementById('statusMsg');
-        status.innerText = '⏳ ફાઇલ વંચાઈ રહી છે...';
+        status.innerText = '⏳ ફાઇલ વંચાઈ રહી છે, રાહ જુઓ...';
 
         if (file.name.endsWith('.txt')) {
             const reader = new FileReader();
             reader.onload = function(evt) {
                 document.getElementById('inputText').value = evt.target.result;
-                status.innerText = '✅ TXT ફાઇલ સફળતાપૂર્વક અપલોડ થઈ ગઈ!';
+                status.innerText = '✅ TXT ફાઇલ સફળતાપૂર્વક અપલોડ થઈ!';
             };
             reader.readAsText(file);
-        } else if (file.name.endsWith('.docx')) {
+        } 
+        else if (file.name.endsWith('.docx')) {
             const reader = new FileReader();
             reader.onload = function(evt) {
                 mammoth.extractRawText({ arrayBuffer: evt.target.result })
                     .then(function(result) {
                         document.getElementById('inputText').value = result.value;
-                        status.innerText = '✅ Word (.docx) ફાઇલ સફળતાપૂર્વક વાંચી લેવાઈ!';
+                        status.innerText = '✅ Word (.docx) ફાઇલ વાંચી લેવાઈ!';
                     })
-                    .catch(function(err) {
-                        status.innerText = '❌ ફાઇલ વાંચવામાં ભૂલ આવી.';
+                    .catch(function() {
+                        status.innerText = '❌ Word ફાઇલ વાંચવામાં ભૂલ આવી.';
                     });
             };
             reader.readAsArrayBuffer(file);
-        } else {
-            alert('માત્ર .docx અથવા .txt ફાઇલ અપલોડ કરો.');
+        } 
+        else if (file.name.endsWith('.pdf')) {
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    const typedarray = new Uint8Array(evt.target.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    let fullText = '';
+
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items.map(item => item.str).join(' ');
+                        fullText += pageText + '\n\n';
+                    }
+
+                    document.getElementById('inputText').value = fullText.trim();
+                    status.innerText = '✅ PDF ફાઇલમાંથી આખું લખાણ ખેંચાઈ ગયું!';
+                } catch (err) {
+                    status.innerText = '❌ PDF ફાઇલ વાંચવામાં ભૂલ આવી.';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        } 
+        else {
+            alert('કૃપા કરીને માત્ર .pdf, .docx અથવા .txt ફાઇલ જ પસંદ કરો.');
             status.innerText = '';
         }
     }
 
-    // AI Translation Function
+    // Split text into chunks of maximum ~400 characters to prevent API limits
+    function splitTextIntoChunks(text, maxLength = 400) {
+        const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [text];
+        const chunks = [];
+        let currentChunk = "";
+
+        for (let sentence of sentences) {
+            if ((currentChunk + sentence).length > maxLength) {
+                if (currentChunk.trim()) chunks.push(currentChunk.trim());
+                currentChunk = sentence;
+            } else {
+                currentChunk += sentence;
+            }
+        }
+        if (currentChunk.trim()) chunks.push(currentChunk.trim());
+        return chunks;
+    }
+
+    // Unlimited AI Translation Logic
     async function translateText() {
         const text = document.getElementById('inputText').value.trim();
         const from = document.getElementById('fromLang').value;
@@ -328,33 +370,42 @@
         const status = document.getElementById('statusMsg');
 
         if (!text) {
-            alert('કૃપા કરીને લખાણ ટાઇપ કરો અથવા ફાઇલ અપલોડ કરો.');
+            alert('કૃપા કરીને લખાણ દાખલ કરો અથવા મોટી ફાઇલ અપલોડ કરો.');
             return;
         }
 
-        status.innerText = '⏳ AI ભાષાંતર થઈ રહ્યું છે, રાહ જુઓ...';
         output.value = '';
+        status.innerText = '⏳ AI ભાષાંતર શરૂ થઈ રહ્યું છે...';
 
         let langPair = `${from === 'autodetect' ? 'en' : from}|${to}`;
+        const chunks = splitTextIntoChunks(text, 400);
+        let translatedFullText = "";
 
-        try {
-            const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`);
-            const data = await res.json();
+        for (let i = 0; i < chunks.length; i++) {
+            let percent = Math.round(((i + 1) / chunks.length) * 100);
+            status.innerText = `⏳ AI ભાષાંતર થઈ રહ્યું છે... (${percent}%)`;
 
-            if (data.responseData) {
-                output.value = data.responseData.translatedText;
-                status.innerText = '✅ ભાષાંતર સફળતાપૂર્વક પૂરું થયું!';
-            } else {
-                status.innerText = '❌ ભાષાંતરમાં ભૂલ આવી. પુનઃ પ્રયાસ કરો.';
+            try {
+                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunks[i])}&langpair=${langPair}`);
+                const data = await res.json();
+
+                if (data.responseData) {
+                    translatedFullText += data.responseData.translatedText + " ";
+                    output.value = translatedFullText.trim();
+                }
+            } catch (err) {
+                console.error("Chunk error:", err);
             }
-        } catch (err) {
-            status.innerText = '❌ નેટવર્ક કનેક્શન તપાસો.';
+            // Small delay to respect API rate limits
+            await new Promise(r => setTimeout(r, 200));
         }
+
+        status.innerText = '✅ આખી ફાઇલનું ભાષાંતર સફળતાપૂર્વક પૂરું થયું!';
     }
 
     function copyText() {
         const text = document.getElementById('outputText').value;
-        if (!text) return alert('કૉપી કરવા માટે કોઈ લખાણ નથી.');
+        if (!text) return alert('કૉપી કરવા માટે લખાણ નથી.');
         navigator.clipboard.writeText(text);
         alert('લખાણ કૉપી થઈ ગયું!');
     }
@@ -373,9 +424,8 @@
         window.speechSynthesis.speak(utterance);
     }
 
-    // HD PDF Generation
+    // HD Clean PDF Generation (Only Translated Text)
     function downloadPDF() {
-        const original = document.getElementById('inputText').value;
         const translated = document.getElementById('outputText').value;
 
         if (!translated) {
@@ -383,15 +433,14 @@
             return;
         }
 
-        document.getElementById('pdfOriginal').innerText = original;
-        document.getElementById('pdfTranslated').innerText = translated;
+        document.getElementById('pdfTranslatedOnly').innerText = translated;
         document.getElementById('pdfDate').innerText = 'તારીખ: ' + new Date().toLocaleDateString('gu-IN');
 
         const element = document.getElementById('pdfContent');
         element.style.display = 'block';
 
         const opt = {
-            margin:       10,
+            margin:       15,
             filename:     `DEVRAM_RABARI_Translation_${new Date().toISOString().split('T')[0]}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2 },
