@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal AI Translator - DEVRAM RABARI</title>
+    <title>Universal AI Document Translator - DEVRAM RABARI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- html2pdf Library for PDF Generation -->
+    <!-- Libraries for PDF export & Word (.docx) reading -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <style>
         :root {
             --bg-main: #0f172a;
@@ -43,7 +44,7 @@
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             border-radius: 12px;
             border-bottom: 4px solid var(--gold);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
@@ -56,6 +57,28 @@
 
         header p {
             margin: 6px 0 0 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* File Upload Box */
+        .upload-area {
+            background: var(--card-bg);
+            border: 2px dashed var(--accent);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .upload-area:hover {
+            background: #283548;
+        }
+
+        .upload-area p {
+            margin: 0;
             color: var(--text-muted);
             font-size: 14px;
         }
@@ -103,7 +126,7 @@
 
         textarea {
             width: 100%;
-            height: 220px;
+            height: 230px;
             background: var(--bg-main);
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -121,7 +144,7 @@
 
         .btn-group {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-top: 12px;
             justify-content: flex-end;
             flex-wrap: wrap;
@@ -129,7 +152,7 @@
 
         button {
             cursor: pointer;
-            padding: 10px 16px;
+            padding: 10px 14px;
             border: none;
             border-radius: 8px;
             font-weight: 600;
@@ -147,47 +170,34 @@
             justify-content: center;
             padding: 14px;
             font-size: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .btn-primary:hover {
             background: var(--accent-hover);
         }
 
-        .btn-secondary {
-            background: #334155;
-            color: white;
+        .btn-secondary { background: #334155; color: white; }
+        .btn-secondary:hover { background: #475569; }
+        .btn-success { background: #15803d; color: white; }
+        .btn-success:hover { background: #166534; }
+
+        .status {
+            text-align: center;
+            font-size: 14px;
+            color: var(--gold);
+            margin-bottom: 15px;
+            min-height: 20px;
+            font-weight: 500;
         }
 
-        .btn-secondary:hover {
-            background: #475569;
-        }
-
-        .btn-success {
-            background: #15803d;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #166534;
-        }
-
-        /* Hidden PDF Export Container */
+        /* Printable Template for PDF */
         #pdfContent {
             display: none;
             padding: 30px;
             background: white;
             color: black;
             font-family: Arial, sans-serif;
-        }
-
-        .status {
-            text-align: center;
-            font-size: 14px;
-            color: var(--gold);
-            margin-top: -10px;
-            margin-bottom: 15px;
-            min-height: 20px;
         }
     </style>
 </head>
@@ -196,8 +206,15 @@
 <div class="container">
     <header>
         <h1>DEVRAM RABARI</h1>
-        <p>Universal AI Multi-Language Translator & PDF Generator</p>
+        <p>AI Document Translator & Premium PDF Generator</p>
     </header>
+
+    <!-- File Upload Section -->
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <p style="font-size: 16px; font-weight: 600; color: #60a5fa; margin-bottom: 4px;">📂 ફાઇલ અપલોડ કરો (Upload File)</p>
+        <p>Word Document (.docx) અથવા Text ફાઇલ (.txt) અપલોડ કરો</p>
+        <input type="file" id="fileInput" style="display:none" accept=".docx,.txt" onchange="handleFileUpload(event)">
+    </div>
 
     <div class="translator-box">
         <!-- Input Panel -->
@@ -216,7 +233,7 @@
                     <option value="ar">અરબી (Arabic)</option>
                 </select>
             </div>
-            <textarea id="inputText" placeholder="અહીં તમારું લખાણ ટાઇપ કરો અથવા પેસ્ટ કરો..."></textarea>
+            <textarea id="inputText" placeholder="અહીં લખાણ ટાઇપ કરો, પેસ્ટ કરો અથવા ઉપરથી ફાઇલ અપલોડ કરો..."></textarea>
             <div class="btn-group">
                 <button class="btn-secondary" onclick="clearText()">🗑️ સાફ કરો</button>
             </div>
@@ -239,8 +256,9 @@
             </div>
             <textarea id="outputText" readonly placeholder="ભાષાંતર થયેલું લખાણ અહીં દેખાશે..."></textarea>
             <div class="btn-group">
-                <button class="btn-secondary" onclick="copyText()">📋 કૉપી કરો</button>
-                <button class="btn-success" onclick="downloadPDF()">📄 PDF ડાઉનલોડ કરો</button>
+                <button class="btn-secondary" onclick="speakText()">🔊 સાંભળો</button>
+                <button class="btn-secondary" onclick="copyText()">📋 કૉપી</button>
+                <button class="btn-success" onclick="downloadPDF()">📄 HD PDF</button>
             </div>
         </div>
     </div>
@@ -248,21 +266,60 @@
     <button class="btn-primary" onclick="translateText()">🌐 AI દ્વારા ભાષાંતર કરો (Translate)</button>
     <div class="status" id="statusMsg"></div>
 
-    <!-- Printable Template for PDF -->
+    <!-- Hidden Template for PDF Printing -->
     <div id="pdfContainer">
         <div id="pdfContent">
-            <h2 style="text-align: center; color: #1e3a8a; border-bottom: 2px solid #d97706; padding-bottom: 10px;">DEVRAM RABARI</h2>
-            <p style="text-align: center; color: #666; font-size: 12px;">Translation Document</p>
-            <hr style="margin: 20px 0;">
-            <h3>Original Text:</h3>
-            <p id="pdfOriginal" style="background: #f1f5f9; padding: 12px; border-radius: 6px; white-space: pre-wrap;"></p>
-            <h3>Translated Text:</h3>
-            <p id="pdfTranslated" style="background: #e0f2fe; padding: 12px; border-radius: 6px; white-space: pre-wrap; font-weight: bold;"></p>
+            <div style="text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 15px;">
+                <h2 style="margin:0; color: #1e3a8a; font-size: 24px;">DEVRAM RABARI</h2>
+                <p style="margin:4px 0 0 0; color: #64748b; font-size: 13px;">Official AI Translated Document Report</p>
+            </div>
+            <div style="margin-bottom: 15px; font-size: 12px; color: #475569; text-align: right;" id="pdfDate"></div>
+            
+            <h4 style="color: #1e3a8a; margin-bottom: 6px;">Original Document:</h4>
+            <div id="pdfOriginal" style="background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; white-space: pre-wrap; font-size: 13px; margin-bottom: 16px;"></div>
+            
+            <h4 style="color: #1e3a8a; margin-bottom: 6px;">AI Translated Output:</h4>
+            <div id="pdfTranslated" style="background: #eff6ff; padding: 12px; border: 1px solid #bfdbfe; border-radius: 6px; white-space: pre-wrap; font-size: 13.5px; font-weight: bold; color: #0f172a;"></div>
         </div>
     </div>
 </div>
 
 <script>
+    // Handle DOCX / TXT File Uploads
+    function handleFileUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const status = document.getElementById('statusMsg');
+        status.innerText = '⏳ ફાઇલ વંચાઈ રહી છે...';
+
+        if (file.name.endsWith('.txt')) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('inputText').value = evt.target.result;
+                status.innerText = '✅ TXT ફાઇલ સફળતાપૂર્વક અપલોડ થઈ ગઈ!';
+            };
+            reader.readAsText(file);
+        } else if (file.name.endsWith('.docx')) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                mammoth.extractRawText({ arrayBuffer: evt.target.result })
+                    .then(function(result) {
+                        document.getElementById('inputText').value = result.value;
+                        status.innerText = '✅ Word (.docx) ફાઇલ સફળતાપૂર્વક વાંચી લેવાઈ!';
+                    })
+                    .catch(function(err) {
+                        status.innerText = '❌ ફાઇલ વાંચવામાં ભૂલ આવી.';
+                    });
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            alert('માત્ર .docx અથવા .txt ફાઇલ અપલોડ કરો.');
+            status.innerText = '';
+        }
+    }
+
+    // AI Translation Function
     async function translateText() {
         const text = document.getElementById('inputText').value.trim();
         const from = document.getElementById('fromLang').value;
@@ -271,11 +328,11 @@
         const status = document.getElementById('statusMsg');
 
         if (!text) {
-            alert('કૃપા કરીને ટ્રાન્સલેટ કરવા માટે લખાણ દાખલ કરો.');
+            alert('કૃપા કરીને લખાણ ટાઇપ કરો અથવા ફાઇલ અપલોડ કરો.');
             return;
         }
 
-        status.innerText = '⏳ AI ભાષાંતર થઈ રહ્યું છે, મહેરબાની કરીને રાહ જુઓ...';
+        status.innerText = '⏳ AI ભાષાંતર થઈ રહ્યું છે, રાહ જુઓ...';
         output.value = '';
 
         let langPair = `${from === 'autodetect' ? 'en' : from}|${to}`;
@@ -288,19 +345,16 @@
                 output.value = data.responseData.translatedText;
                 status.innerText = '✅ ભાષાંતર સફળતાપૂર્વક પૂરું થયું!';
             } else {
-                status.innerText = '❌ ભાષાંતરમાં ભૂલ આવી. ફરી પ્રયાસ કરો.';
+                status.innerText = '❌ ભાષાંતરમાં ભૂલ આવી. પુનઃ પ્રયાસ કરો.';
             }
         } catch (err) {
-            status.innerText = '❌ નેટવર્ક કનેક્શન ચકાસો.';
+            status.innerText = '❌ નેટવર્ક કનેક્શન તપાસો.';
         }
     }
 
     function copyText() {
         const text = document.getElementById('outputText').value;
-        if (!text) {
-            alert('કૉપી કરવા માટે કોઈ લખાણ નથી.');
-            return;
-        }
+        if (!text) return alert('કૉપી કરવા માટે કોઈ લખાણ નથી.');
         navigator.clipboard.writeText(text);
         alert('લખાણ કૉપી થઈ ગયું!');
     }
@@ -309,8 +363,17 @@
         document.getElementById('inputText').value = '';
         document.getElementById('outputText').value = '';
         document.getElementById('statusMsg').innerText = '';
+        document.getElementById('fileInput').value = '';
     }
 
+    function speakText() {
+        const text = document.getElementById('outputText').value;
+        if (!text) return alert('સાંભળવા માટે લખાણ નથી.');
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // HD PDF Generation
     function downloadPDF() {
         const original = document.getElementById('inputText').value;
         const translated = document.getElementById('outputText').value;
@@ -322,13 +385,14 @@
 
         document.getElementById('pdfOriginal').innerText = original;
         document.getElementById('pdfTranslated').innerText = translated;
+        document.getElementById('pdfDate').innerText = 'તારીખ: ' + new Date().toLocaleDateString('gu-IN');
 
         const element = document.getElementById('pdfContent');
         element.style.display = 'block';
 
         const opt = {
             margin:       10,
-            filename:     `Translation_${new Date().toISOString().split('T')[0]}.pdf`,
+            filename:     `DEVRAM_RABARI_Translation_${new Date().toISOString().split('T')[0]}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2 },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
